@@ -10,7 +10,6 @@ function VerifyPageContent() {
     const toast = useCustomToast();
 
     const token = searchParams.get("token");
-    console.log(token);
     const [status, setStatus] = useState<"idle" | "verifying" | "success" | "error">("verifying");
     const [message, setMessage] = useState<string>("");
 
