@@ -1,10 +1,58 @@
-import Image from "next/image"
+"use client"
+
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Sparkles, Rocket, TrendingUp, Trophy } from "lucide-react"
+import { Rocket, TrendingUp } from "lucide-react"
 import Link from "next/link"
+import { useState } from "react"
+import { useCustomToast } from "@/components/ui/custom-toast"
+import axios from "axios";
 
+const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 export default function Home() {
+  const [email, setEmail] = useState("")
+  const [name, setName] = useState("")
+  const [isLoading, setIsLoading] = useState(false)
+  const toast = useCustomToast();
+
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+
+    // Handle empty input
+    if (!name.trim() || !email.trim()) {
+      toast.error("Please enter both your name and email.");
+      return;
+    }
+
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${backendUrl}/api/waitlist/add`, {
+        email,
+        name,
+      });
+
+      toast.success(response.data.message ? response.data.message : "Waitlist added successfully, check your email for verification");
+      setName("");
+      setEmail("");
+    } catch (err: any) {
+      console.log(err)
+      toast.error(
+        err?.response?.data?.message ||
+        "Something went wrong. Please try again."
+      );
+      setName("");
+      setEmail("");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col bg-[#f9f9f9] bg-grid-pattern">
 
@@ -39,13 +87,18 @@ export default function Home() {
             Fuel viral battles, rep your memes, and win the internet — on-chain.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto">
-            <Input type="email" placeholder="Email" className="h-12 bg-white border-gray-200" />
+          <div className="flex flex-col sm:flex-col gap-4 justify-center max-w-md mx-auto">
+            <div className="w-full flex gap-3"> 
+              <Input type="name" placeholder="Name" className="h-12 bg-white border-gray-200" value={name} onChange={(e) => setName(e.target.value)} />
+              <Input type="email" placeholder="Email" className="h-12 bg-white border-gray-200" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
             <Button
               variant="outline"
               className="h-12 px-8 border bg-[#28d358] hover:bg-[#28d358] text-white hover:text-white border-none font-medium cursor-pointer hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300"
+              onClick={(e) => handleSubmit(e)}
+              disabled={isLoading}
             >
-              Join Waitlist
+              {isLoading ? "Joining..." : "Join Waitlist"}
               <Rocket className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
           </div>
