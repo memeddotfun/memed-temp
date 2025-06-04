@@ -9,8 +9,7 @@ const waitlistSchema = z.object({
     name: z.string(),
 });
 
-const confirmSchema = z.object({
-    email: z.string().email(),
+const confirmSchema = z.object({    
     token: z.string(),
 });
 
@@ -63,16 +62,16 @@ export const confirmWaitlist = async (req: Request, res: Response) => {
         if(!confirmSchema.safeParse(req.body).success){
             return res.status(400).json({ message: 'Invalid request body' });
         }
-        const { email, token } = confirmSchema.parse(req.body);
-        const tokenExists = await prisma.token.findUnique({ where: { token, waitlist: { email, status: 'PENDING' } } });
+        const { token } = confirmSchema.parse(req.body);
+        const tokenExists = await prisma.token.findUnique({ where: { token, waitlist: { status: 'PENDING' } } });
         if (!tokenExists) {
             return res.status(400).json({ message: 'Invalid token' });
         }
         const waitlist = await prisma.waitlist.update({
-            where: { email },
+            where: { id: tokenExists.waitlistId },
             data: { status: 'JOINED' },
         });
-        await prisma.token.deleteMany({ where: { waitlistId: email } });
+        await prisma.token.deleteMany({ where: { waitlistId: tokenExists.waitlistId } });
         res.json({ message: 'Waitlist confirmed successfully' });
     } catch (error) {
         console.error('Error in confirmWaitlist:', error);
