@@ -38,7 +38,7 @@ export default function Home() {
         name,
       });
 
-      toast.success(response.data.message ? response.data.message : "Waitlist added successfully, check your email for verification");
+      toast.success("Success! Check your email to verify your spot. If you don't see it, please check your spam or promotions folder.");
       setName("");
       setEmail("");
     } catch (err: any) {
