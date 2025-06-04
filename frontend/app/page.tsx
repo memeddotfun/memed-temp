@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Rocket, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useCustomToast } from "@/components/ui/custom-toast"
 import axios from "axios";
 
@@ -14,7 +14,8 @@ export default function Home() {
   const [name, setName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const toast = useCustomToast();
-
+ 
+  // toast.success("Success! Check your email to verify your spot. If you don't see it, please check your spam or promotions folder.");
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
 
@@ -38,7 +39,9 @@ export default function Home() {
         name,
       });
 
-      toast.success("Success! Check your email to verify your spot. If you don't see it, please check your spam or promotions folder.");
+      toast.success("Success! Check your email to verify your spot.",{
+        description: "If you don't see it, please check your spam or promotions folder.",
+      });
       setName("");
       setEmail("");
     } catch (err: any) {
