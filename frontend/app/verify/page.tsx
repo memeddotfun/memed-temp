@@ -1,14 +1,14 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useCustomToast } from "@/components/ui/custom-toast";
 
-const VerifyPage = () => {
+function VerifyPageContent() {
     const searchParams = useSearchParams();
     const router = useRouter();
     const toast = useCustomToast();
-    
+
     const token = searchParams.get("token");
     console.log(token);
     const [status, setStatus] = useState<"idle" | "verifying" | "success" | "error">("verifying");
@@ -125,6 +125,12 @@ const VerifyPage = () => {
             </footer>
         </div>
     );
-};
+}
+
+const VerifyPage = () => (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+        <VerifyPageContent />
+    </Suspense>
+);
 
 export default VerifyPage;
