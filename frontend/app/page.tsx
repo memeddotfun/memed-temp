@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Rocket, TrendingUp } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useCustomToast } from "@/components/ui/custom-toast"
 import axios from "axios";
 
@@ -13,9 +13,10 @@ export default function Home() {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
   const toast = useCustomToast();
 
-  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Handle empty input
@@ -38,9 +39,12 @@ export default function Home() {
         name,
       });
 
-      toast.success(response.data.message ? response.data.message : "Waitlist added successfully, check your email for verification");
+      toast.success("Success! Check your email to verify your spot.",{
+        description: "If you don't see it, please check your spam or promotions folder.",
+      });
       setName("");
       setEmail("");
+      setSubmitted(true);
     } catch (err: any) {
       console.log(err)
       toast.error(
@@ -49,6 +53,7 @@ export default function Home() {
       );
       setName("");
       setEmail("");
+      setSubmitted(false);
     } finally {
       setIsLoading(false);
     }
@@ -87,21 +92,54 @@ export default function Home() {
             Fuel viral battles, rep your memes, and win the internet — on-chain.
           </p>
 
-          <div className="flex flex-col sm:flex-col gap-4 justify-center max-w-md mx-auto">
-            <div className="w-full flex gap-3"> 
-              <Input type="name" placeholder="Name" className="h-12 bg-white border-gray-200" value={name} onChange={(e) => setName(e.target.value)} />
-              <Input type="email" placeholder="Email" className="h-12 bg-white border-gray-200" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <form
+            className="flex flex-col sm:flex-col gap-4 justify-center max-w-md mx-auto"
+            onSubmit={handleSubmit}
+          >
+            <div className="w-full flex gap-3">
+              <Input
+                type="text"
+                name="name"
+                placeholder="Name"
+                className="h-12 bg-white border-gray-200"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                disabled={submitted}
+                autoComplete="name"
+              />
+              <Input
+                type="email"
+                name="email"
+                placeholder="Email"
+                className="h-12 bg-white border-gray-200"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={submitted}
+                autoComplete="email"
+              />
             </div>
-            <Button
-              variant="outline"
-              className="h-12 px-8 border bg-[#28d358] hover:bg-[#28d358] text-white hover:text-white border-none font-medium cursor-pointer hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300"
-              onClick={(e) => handleSubmit(e)}
-              disabled={isLoading}
-            >
-              {isLoading ? "Joining..." : "Join Waitlist"}
-              <Rocket className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </div>
+            {submitted ? (
+              <div className="w-full bg-white rounded-lg p-2 flex flex-col items-center justify-center mt-2">
+                <div className="bg-green-10 flex-col 0 text-green-800 px-4 py-3 rounded-lg text-base font-medium flex items-center justify-center">
+                  ✅ Success! Check your email to verify your spot.
+                  <br />
+                  <span className="text-green-700 text-opacity-50 font-regular text-xs">
+                    If you don't see it, please check your spam or promotions folder.
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <Button
+                type="submit"
+                variant="outline"
+                className="h-12 px-8 border bg-[#28d358] hover:bg-[#28d358] text-white hover:text-white border-none font-medium cursor-pointer hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-2xl transition-all duration-300"
+                disabled={isLoading}
+              >
+                {isLoading ? "Joining..." : "Join Waitlist"}
+                <Rocket className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+              </Button>
+            )}
+          </form>
 
           <div className="mt-8 flex justify-center">
             <div className="bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium flex items-center animate-pulse-slow">
