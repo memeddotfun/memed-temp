@@ -3,10 +3,12 @@ import prisma from '../clients/prisma';
 import sendMail from '../functions/sendemail';
 import { randomBytes } from 'crypto';
 import { z } from 'zod';
+import { verifyRecaptcha } from '../utils/recaptcha';
 
 const waitlistSchema = z.object({
     email: z.string().email(),
     name: z.string(),
+    recaptchaToken: z.string(),
 });
 
 const confirmSchema = z.object({    
@@ -15,9 +17,15 @@ const confirmSchema = z.object({
 
 export const addWaitlist = async (req: Request, res: Response) => {
     try {
-        const { email, name } = waitlistSchema.parse(req.body);
+        const { email, name, recaptchaToken } = waitlistSchema.parse(req.body);
         if(!waitlistSchema.safeParse(req.body).success){
             return res.status(400).json({ message: 'Invalid request body' });
+        }
+        
+        // Verify reCAPTCHA token
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        if (!isRecaptchaValid) {
+            return res.status(400).json({ message: 'reCAPTCHA verification failed' });
         }
         const emailExists = await prisma.waitlist.findUnique({ where: { email } });
         if (emailExists) {
