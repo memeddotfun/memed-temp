@@ -127,7 +127,7 @@ export default function Home() {
             © 2025 Memed <span className="inline-block animate-spin-slow">🔥</span>
           </p>
           <div className="flex gap-6 mt-4 md:mt-0">
-            <Link href="https://github.com/furkannabisumji/memed" target="_blank" className="hover:text-green-600 transition-colors">
+            <Link href="https://github.com/memeddotfun" target="_blank" className="hover:text-green-600 transition-colors">
               GitHub
             </Link>
             <Link href={"https://x.com/memeddotfun"} target="_blank" className="hover:text-green-600 transition-colors">
