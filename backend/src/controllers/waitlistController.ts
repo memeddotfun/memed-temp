@@ -22,10 +22,10 @@ export const addWaitlist = async (req: Request, res: Response) => {
             return res.status(400).json({ message: 'Invalid request body' });
         }
         
-        // Verify reCAPTCHA token
-        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken);
+        // Verify reCAPTCHA token with action and minimum score
+        const isRecaptchaValid = await verifyRecaptcha(recaptchaToken, 'waitlist_submit', 0.5);
         if (!isRecaptchaValid) {
-            return res.status(400).json({ message: 'reCAPTCHA verification failed' });
+            return res.status(400).json({ message: 'reCAPTCHA verification failed. Please try again.' });
         }
         const emailExists = await prisma.waitlist.findUnique({ where: { email } });
         if (emailExists) {

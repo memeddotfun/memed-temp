@@ -7,23 +7,17 @@ import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
 import { useCustomToast } from "@/components/ui/custom-toast"
 import axios from "axios";
-import ReCAPTCHA from "react-google-recaptcha";
+import { useGoogleReCaptcha } from "react-google-recaptcha-v3";
 
 const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
-const RECAPTCHA_SITE_KEY = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY || '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Use test key if not provided
 
 export default function Home() {
   const [email, setEmail] = useState("")
   const [name, setName] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
-  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const { executeRecaptcha } = useGoogleReCaptcha();
   const toast = useCustomToast();
-
-  const handleCaptchaChange = (token: string | null) => {
-    setCaptchaToken(token);
-  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,19 +34,21 @@ export default function Home() {
       toast.error("Please enter a valid email address.");
       return;
     }
-
-    // Verify reCAPTCHA
-    if (!captchaToken) {
-      toast.error("Please complete the reCAPTCHA verification.");
+    
+    if (!executeRecaptcha) {
+      toast.error("reCAPTCHA not available. Please try again later.");
       return;
     }
 
     setIsLoading(true);
     try {
+      // Execute reCAPTCHA with an action name
+      const recaptchaToken = await executeRecaptcha('waitlist_submit');
+      
       const response = await axios.post(`${backendUrl}/api/waitlist/add`, {
         email,
         name,
-        recaptchaToken: captchaToken,
+        recaptchaToken,
       });
 
       toast.success("Success! Check your email to verify your spot.",{
@@ -60,10 +56,6 @@ export default function Home() {
       });
       setName("");
       setEmail("");
-      setCaptchaToken(null);
-      if (recaptchaRef.current) {
-        recaptchaRef.current.reset();
-      }
       setSubmitted(true);
     } catch (err: any) {
       console.log(err)
@@ -138,14 +130,7 @@ export default function Home() {
                 autoComplete="email"
               />
             </div>
-            <div className="w-full flex justify-center my-2">
-              <ReCAPTCHA
-                ref={recaptchaRef}
-                sitekey={RECAPTCHA_SITE_KEY}
-                onChange={handleCaptchaChange}
-                theme="light"
-              />
-            </div>
+
             {submitted ? (
               <div className="w-full bg-white rounded-lg p-2 flex flex-col items-center justify-center mt-2">
                 <div className="bg-green-10 flex-col 0 text-green-800 px-4 py-3 rounded-lg text-base font-medium flex items-center justify-center">
