@@ -22,6 +22,4 @@ async function sendMail(email: string, name: string, token: string) {
     return response;
 }
 
-sendMail('test-krfh2zazt@srv1.mail-tester.com', 'Furkan', '123456');
-
 export default sendMail;
